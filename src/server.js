@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
+const Jwt = require('@hapi/jwt');
 
 // Albums
 const album = require('./api/albums');
@@ -17,6 +18,16 @@ const user = require('./api/users');
 const UserValidator = require('./validators/users');
 const UsersService = require('./services/postgres/UsersServices');
 
+// Playlists
+const playlist = require('./api/playlists');
+const PlaylistValidator = require('./validators/playlists');
+const PlaylistsService = require('./services/postgres/PlaylistsServices');
+
+// Playlist Songs
+const playlistSongs = require('./api/playlistSongs');
+const PlaylistSongValidator = require('./validators/playlistSongs');
+const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
+
 // Authentications
 const authentication = require('./api/authentications');
 const AuthenticationValidator = require('./validators/authentications');
@@ -29,6 +40,8 @@ const init = async () => {
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
   const usersService = new UsersService();
+  const playlistsService = new PlaylistsService();
+  const playlistSongsService = new PlaylistSongsService(songsService, playlistsService);
   const authenticationsService = new AuthenticationsService();
 
   const server = Hapi.server({
@@ -39,6 +52,28 @@ const init = async () => {
         origin: ['*']
       }
     }
+  });
+
+  await server.register([
+    {
+      plugin: Jwt
+    }
+  ]);
+
+  server.auth.strategy('openmusicapp_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id
+      }
+    })
   });
 
   await server.register([
@@ -61,6 +96,20 @@ const init = async () => {
       options: {
         service: usersService,
         validator: UserValidator
+      }
+    },
+    {
+      plugin: playlist,
+      options: {
+        service: playlistsService,
+        validator: PlaylistValidator
+      }
+    },
+    {
+      plugin: playlistSongs,
+      options: {
+        service: playlistSongsService,
+        validator: PlaylistSongValidator
       }
     },
     {

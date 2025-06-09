@@ -12,7 +12,7 @@ class AuthenticationsServices {
       values: [token]
     };
 
-    const result = await this._pool.query(query).catch((err) => err);
+    const result = await this._pool.query(query);
     return result;
   }
 
@@ -22,7 +22,7 @@ class AuthenticationsServices {
       values: [token]
     };
 
-    const result = await this._pool.query(query).catch((err) => err);
+    const result = await this._pool.query(query);
     if (!result.rows.length) {
       throw new InvariantError('Credential Invalid!');
     }

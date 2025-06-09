@@ -21,7 +21,7 @@ class SongsService {
       values: [id, title, year, genre, performer, duration, albumId, createdAt, updatedAt]
     };
 
-    const result = await this._pool.query(query).catch((err) => err);
+    const result = await this._pool.query(query);
     if (!result.rows[0].id) {
       throw new InvariantError('Failed to add song.');
     }
@@ -38,7 +38,7 @@ class SongsService {
       values: [queryTitle, queryPerformer]
     };
 
-    const result = await this._pool.query(query).catch((err) => err);
+    const result = await this._pool.query(query);
     if (!result.rows.length) {
       throw new NotFoundError('Song not found.');
     }
