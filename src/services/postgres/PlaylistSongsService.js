@@ -62,6 +62,10 @@ class PlaylistSongsServices {
   async verifyPlaylistOwner(id, owner) {
     await this._playlistsService.verifyPlaylistOwner(id, owner);
   }
+
+  async verifyPlaylistExist(playlistId) {
+    await this._playlistsService.verifyPlaylistExist(playlistId);
+  }
 }
 
 module.exports = PlaylistSongsServices;

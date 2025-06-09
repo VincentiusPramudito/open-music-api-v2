@@ -75,6 +75,18 @@ class Playlists {
       throw new AuthorizationError('You have no permission to do this');
     }
   }
+
+  async verifyPlaylistExist(id) {
+    const query = {
+      text: 'SELECT id FROM playlists WHERE id = $1',
+      values: [id]
+    };
+
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError('Cannot find playlist');
+    }
+  }
 }
 
 module.exports = Playlists;

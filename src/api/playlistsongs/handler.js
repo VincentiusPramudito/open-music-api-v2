@@ -5,10 +5,10 @@ class PlaylistSongsHandler {
   }
 
   postPlaylistSongs = async (request, h) => {
+    this._validator.validatePlaylistSongPayload(request.payload);
     const { songId  } = request.payload;
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
-    this._validator.validatePlaylistSongPayload({ playlistId, songId });
 
     await this._service.verifyPlaylistOwner(playlistId, credentialId);
     await this._service.verifySongIsExist(songId);
@@ -26,6 +26,7 @@ class PlaylistSongsHandler {
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
+    await this._service.verifyPlaylistExist(playlistId);
     await this._service.verifyPlaylistOwner(playlistId, credentialId);
 
     const playlist = await this._service.getPlaylistSongs(playlistId);
