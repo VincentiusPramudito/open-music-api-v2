@@ -5,8 +5,9 @@ const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class Playlists {
-  constructor() {
+  constructor(collaborationService) {
     this._pool = ConnectPool();
+    this._collaborationService = collaborationService;
   }
 
   async addPlaylist({ name, owner }) {
@@ -28,8 +29,9 @@ class Playlists {
     const query = {
       text: `
         SELECT playlists.id, playlists.name, users.username FROM playlists
-        LEFT JOIN users ON playlists.owner = users.id
-        WHERE playlists.owner = $1
+        INNER JOIN users ON playlists.owner = users.id
+        LEFT JOIN collaborations ON playlists.id = collaborations.playlist_id
+        WHERE playlists.owner = $1 OR collaborations.user_id = $1
       `,
       values: [owner]
     };
@@ -42,7 +44,7 @@ class Playlists {
     const query = {
       text: `
         SELECT playlists.id, playlists.name, users.username FROM playlists
-        LEFT JOIN users ON playlists.owner = users.id
+        INNER JOIN users ON playlists.owner = users.id
         WHERE playlists.id = $1
       `,
       values: [id]
@@ -66,17 +68,37 @@ class Playlists {
 
   async verifyPlaylistOwner(id, owner) {
     const query = {
-      text: 'SELECT id FROM playlists WHERE id = $1 AND owner = $2',
-      values: [id, owner]
+      text: 'SELECT * FROM playlists WHERE id = $1',
+      values: [id]
     };
 
     const result = await this._pool.query(query);
     if (!result.rows.length) {
-      throw new AuthorizationError('You have no permission to do this');
+      throw new NotFoundError('Cannot find playlist');
+    }
+
+    const playlist = result.rows[0];
+    if (playlist.owner !== owner) {
+      throw new AuthorizationError('You have no permission');
     }
   }
 
-  async verifyPlaylistExist(id) {
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationService.verifyCollaborator({ playlistId, userId });
+      } catch {
+        throw error;
+      }
+    }
+  }
+
+  async verifyPlaylistById(id) {
     const query = {
       text: 'SELECT id FROM playlists WHERE id = $1',
       values: [id]

@@ -24,7 +24,7 @@ exports.up = (pgm) => {
   pgm.addConstraint('playlist_songs', 'fk_playlist_songs.playlist_id_playlists.id', 'FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE');
 
   // create constraint foreign key to column song_id from table playlist_songs reference to column id on table songs
-  pgm.addConstraint('playlist_songs', 'fk_playlist_songs.song_id_users.id', 'FOREIGN KEY(song_id) REFERENCES songs(id) ON DELETE CASCADE');
+  pgm.addConstraint('playlist_songs', 'fk_playlist_songs.song_id_songs.id', 'FOREIGN KEY(song_id) REFERENCES songs(id) ON DELETE CASCADE');
 };
 
 /**
@@ -34,6 +34,6 @@ exports.up = (pgm) => {
  */
 exports.down = (pgm) => {
   pgm.dropConstraint('playlist_songs', 'fk_playlist_songs.playlist_id_playlists.id');
-  pgm.dropConstraint('playlist_songs', 'fk_playlist_songs.song_id_users.id');
+  pgm.dropConstraint('playlist_songs', 'fk_playlist_songs.song_id_songs.id');
   pgm.dropTable('playlist_songs');
 };

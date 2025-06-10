@@ -3,21 +3,21 @@ const { PostAuthenticationsPayloadSchema, PutAuthenticationsPayloadSchema, Delet
 
 const AuthenticationsValidator = {
   validatePostAuthenticationPayload: (payload) => {
-    const validatePayload = PostAuthenticationsPayloadSchema.validate(payload);
-    if (validatePayload.error) {
-      throw new InvariantError(validatePayload.error.message);
+    const validateResult = PostAuthenticationsPayloadSchema.validate(payload);
+    if (validateResult.error) {
+      throw new InvariantError(validateResult.error.message);
     }
   },
   validatePutAuthenticationPayload: (payload) => {
-    const validatePayload = PutAuthenticationsPayloadSchema.validate(payload);
-    if (validatePayload.error) {
-      throw new InvariantError(validatePayload.error.message);
+    const validateResult = PutAuthenticationsPayloadSchema.validate(payload);
+    if (validateResult.error) {
+      throw new InvariantError(validateResult.error.message);
     }
   },
   validateDeleteAuthenticationPayload: (payload) => {
-    const validatePayload = DeleteAuthenticationsPayloadSchema.validate(payload);
-    if (validatePayload.error) {
-      throw new InvariantError(validatePayload.error.message);
+    const validateResult = DeleteAuthenticationsPayloadSchema.validate(payload);
+    if (validateResult.error) {
+      throw new InvariantError(validateResult.error.message);
     }
   }
 };

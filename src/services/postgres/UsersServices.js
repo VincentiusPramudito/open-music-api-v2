@@ -3,6 +3,7 @@ const ConnectPool = require('./ConnectPool');
 const InvariantError = require('../../exceptions/InvariantError');
 const bcrypt = require('bcrypt');
 const AuthenticationError = require('../../exceptions/AuthenticationError');
+const NotFoundError = require('../../exceptions/NotFoundError');
 
 class UsersServices {
   constructor() {
@@ -25,6 +26,18 @@ class UsersServices {
     }
 
     return result.rows[0].id;
+  }
+
+  async verifyUserById(id) {
+    const query = {
+      text: 'SELECT id FROM users WHERE id = $1',
+      values: [id]
+    };
+
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError('User not found');
+    }
   }
 
   async verifyNewUsername(username) {
@@ -57,20 +70,6 @@ class UsersServices {
     }
 
     return id;
-  }
-
-  async getUserById(id) {
-    const query = {
-      text: 'SELECT * FROM users WHEN id = $1',
-      values: [id]
-    };
-
-    const result = await this._pool.query(query);
-    if (!result.rows.length) {
-      throw new InvariantError('Cannot find user');
-    }
-
-    return result.rows[0];
   }
 }
 

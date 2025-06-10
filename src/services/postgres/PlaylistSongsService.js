@@ -4,10 +4,8 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistSongsServices {
-  constructor(usersService, playlistsService) {
+  constructor() {
     this._pool = ConnectPool();
-    this._songsService = usersService;
-    this._playlistsService = playlistsService;
   }
 
   async addPlaylistSongs(playlistId, songId) {
@@ -25,7 +23,6 @@ class PlaylistSongsServices {
   }
 
   async getPlaylistSongs(playlistId) {
-    const playlist = await this._playlistsService.getPlaylistById(playlistId);
     const query = {
       text: `
       SELECT songs.id, songs.title, songs.performer FROM songs
@@ -39,8 +36,7 @@ class PlaylistSongsServices {
       throw new NotFoundError('Empty songs');
     }
 
-    playlist[0].songs = result.rows;
-    return playlist[0];
+    return result.rows;
   }
 
   async deletePlaylistSong(playlistId, songId) {
@@ -53,18 +49,6 @@ class PlaylistSongsServices {
     if (!result.rows.length) {
       throw new InvariantError('Remove song failed. Cannot find song in playlist');
     }
-  }
-
-  async verifySongIsExist(id) {
-    await this._songsService.getSongById(id);
-  }
-
-  async verifyPlaylistOwner(id, owner) {
-    await this._playlistsService.verifyPlaylistOwner(id, owner);
-  }
-
-  async verifyPlaylistExist(playlistId) {
-    await this._playlistsService.verifyPlaylistExist(playlistId);
   }
 }
 
